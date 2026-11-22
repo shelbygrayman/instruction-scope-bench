@@ -1,0 +1,21 @@
+name: Instruction scope benchmark
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  benchmark:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: 22
+      - run: npm install --prefix "$RUNNER_TEMP/pinned" @openai/codex@0.171.0
+      - run: python3 scope.py --codex "$RUNNER_TEMP/pinned/node_modules/.bin/codex" > results.json
+      - if: always()
+        run: cat results.json
+      - if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: instruction-scope-results
+          path: results.json
